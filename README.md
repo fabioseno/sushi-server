@@ -1,2 +1,2 @@
-# wt-logging
-Logging service as part of the Sushi framework.
+# sushi-server
+Sushi base services as part of the Sushi framework.
