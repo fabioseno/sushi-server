@@ -1,15 +1,16 @@
-/*global module, rqeuire*/
-module.exports.paginate = function (model, filter, pagingOptions, sortOptions, callback) {
+/*global module*/
+module.exports.paginate = function (query, pagingOptions, sortOptions, callback) {
     'use strict';
 
-    model.count(filter, function (err, total) {
+    query.count(function (err, total) {
         var currentPage,
             pageSize,
             totalPages,
-            query = model.find(filter),
-            result = {};
+            result = {
+                page: {}
+            };
 
-        query.find(filter);
+        query.find();
   
         if (pagingOptions) {
             currentPage = pagingOptions.currentPage;
@@ -23,6 +24,8 @@ module.exports.paginate = function (model, filter, pagingOptions, sortOptions, c
                 }
 
                 totalPages = Math.ceil(total / pageSize);
+                
+                result.page.pageSize = pagingOptions.pageSize;
             }
         }
 
@@ -30,14 +33,19 @@ module.exports.paginate = function (model, filter, pagingOptions, sortOptions, c
             query.sort(sortOptions.field);
         }
 
-        result = {
-            page: {
-                totalItems: total,
-                totalPages: totalPages,
-                currentPage: currentPage
-            }
-        };
-
-        callback(query, result);
+        result.page.totalItems = total;
+        
+        if (totalPages) {
+            result.page.totalPages = totalPages;
+        }
+        
+        if (currentPage) {
+            result.page.currentPage = currentPage;
+        }
+        
+        query.exec(function (err, list) {
+            result.list = list;
+            callback(err, result);
+        });
     });
 };

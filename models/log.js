@@ -18,11 +18,7 @@ var mongoose = require('mongoose'),
         logType: {
             required: true,
             type: String,
-            enum: ['info', 'warn', 'debug', 'error', 'metrics']
-        },
-        storeCode: {
-            type: String,
-            trim: true
+            'enum': ['info', 'warn', 'debug', 'error', 'metrics']
         },
         value: {
             required: true,

@@ -8,6 +8,6 @@ module.exports = function (router) {
     
     router.post('/logs/search', logController.search);
     
-    router.post('/logs', logController.add);
+    router.put('/logs', logController.add);
     
 };
