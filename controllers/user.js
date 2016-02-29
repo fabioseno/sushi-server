@@ -25,6 +25,12 @@ module.exports.search = function (req, res) {
 
             query = query.or([{ 'firstName': { $regex: regex }}, { 'lastName': { $regex: regex }}]);
         }
+        
+        if (req.body.searchCriteria.login) {
+            regex = new RegExp(req.body.searchCriteria.login, 'i');
+            
+            query = query.where('login', { $regex: regex });
+        }
     }
 
     pagination.paginate(query, pagingOptions, sortOptions, function (err, result) {
@@ -35,13 +41,18 @@ module.exports.search = function (req, res) {
 module.exports.get = function (req, res) {
     'use strict';
 
-    User.findById(req.params.id, function (err, result) {
+    User.findById(req.params.id, '-password', function (err, result) {
         messageHandler.wrapResponse(res, err, result);
     });
 };
 
 module.exports.add = function (req, res) {
     'use strict';
+    
+    // validations
+    if (req.validations && req.validations.length > 0) {
+        return messageHandler.wrapResponse(res, req.validations);
+    }
 
     var model = new User(req.body),
         data;
@@ -57,13 +68,17 @@ module.exports.add = function (req, res) {
 
 module.exports.update = function (req, res) {
     'use strict';
+    
+    // validations
+    if (req.validations && req.validations.length > 0) {
+        return messageHandler.wrapResponse(res, req.validations);
+    }
 
     var data = {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         email: req.body.email,
         birthday: req.body.birthday,
-        login: req.body.login,
         status: req.body.status
     };
 
