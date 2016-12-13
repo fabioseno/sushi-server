@@ -1,38 +1,27 @@
 /*global module*/
-module.exports.wrapResponse = function (response, error, data, onError, onData, onNotData) {
+module.exports.wrapResponse = function (response, error, data) {
     'use strict';
-    
+
     var result = {},
         messages = [];
 
-    if (data) {
-        if (onData) {
-            onData();
-        } else {
-            result = data;
-        }
-    } else {
-        if (onNotData) {
-            onNotData();
-        }
-    }
-    
+    result.data = data;
+    result.success = !error;
+
     if (error) {
-        if (onError) {
-            onError();
+        if (error instanceof Array) {
+            messages = error;
         } else {
-            if (error instanceof Array) {
-                messages = error;
-            } else {
-                messages.push(error);
-            }
-
-            result.$$messages = messages;
-
-            response.status(500).send(result);
+            messages.push(error);
         }
-    } else {
-        response.send(result);
+
+        result.$$messages = messages;
+
+        if (response.statusCode === 200) {
+            response.status(500);
+        }
     }
     
+    response.json(result);
+
 };

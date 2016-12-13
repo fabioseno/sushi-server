@@ -1,8 +1,10 @@
-/*global module*/
+/*global module, require*/
+var config  = require('../config/server.conf.json');
+
 module.exports.paginate = function (query, pagingOptions, sortOptions, callback) {
     'use strict';
 
-    query.count(function (err, total) {
+    query.count(function (err, totalItems) {
         var currentPage,
             pageSize,
             totalPages,
@@ -11,37 +13,34 @@ module.exports.paginate = function (query, pagingOptions, sortOptions, callback)
             };
 
         query.find();
-  
+
         if (pagingOptions) {
             currentPage = pagingOptions.currentPage;
             pageSize = pagingOptions.pageSize;
-
-            if (pageSize) {
-                query.limit(pageSize);
-
-                if (currentPage) {
-                    query.skip((currentPage - 1) * pageSize);
-                }
-
-                totalPages = Math.ceil(total / pageSize);
-                
-                result.page.pageSize = pagingOptions.pageSize;
-            }
         }
 
+        // default values
+        if (!currentPage) { currentPage = 1; }
+        if (!pageSize) { pageSize = config.paging.pageSize; }
+
+        // number of pages
+        query.limit(pageSize);
+
+        if (currentPage) {
+            query.skip((currentPage - 1) * pageSize);
+        }
+
+        totalPages = Math.ceil(totalItems / pageSize);
+
+        // sorting
         if (sortOptions) {
             query.sort(sortOptions.field);
         }
 
-        result.page.totalItems = total;
-        
-        if (totalPages) {
-            result.page.totalPages = totalPages;
-        }
-        
-        if (currentPage) {
-            result.page.currentPage = currentPage;
-        }
+        result.page.totalItems = totalItems;
+        result.page.pageSize = pageSize;
+        result.page.totalPages = totalPages;
+        result.page.currentPage = currentPage;
         
         query.exec(function (err, list) {
             result.list = list;

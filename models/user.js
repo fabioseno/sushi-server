@@ -28,10 +28,6 @@ var mongoose = require('mongoose'),
             required: true,
             type: String
         },
-        status: {
-            required: true,
-            type: String
-        },
         creationDate: {
             required: true,
             type: Date
@@ -44,5 +40,20 @@ var mongoose = require('mongoose'),
             type: String
         }
     });
+
+userSchema.virtual('id').get(function () {
+    'use strict';
+
+    return this._id.toHexString();
+});
+
+userSchema.methods.toJSON = function() {
+  var obj = this.toObject()
+  delete obj.password
+  delete obj.creationDate
+  delete obj.lastLogin
+  delete obj.__v
+  return obj
+}
 
 module.exports = mongoose.model('User', userSchema);

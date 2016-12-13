@@ -1,0 +1,8 @@
+{
+    "authentication": {
+        "timeout": 1
+    },
+    "paging": {
+        "pageSize": 10
+    }
+}

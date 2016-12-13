@@ -1,7 +1,9 @@
 /*global require, module, User*/
-var User           = require('../models/user'),
-    pagination     = require('../utils/pagination'),
-    messageHandler = require('../utils/messageHandler');
+var User              = require('../models/user'),
+    SessionController = require('../controllers/session'),
+    pagination        = require('../utils/pagination'),
+    messageHandler    = require('../utils/messageHandler'),
+    config            = require('../config/server.conf.json');
 
 module.exports.list = function (req, res) {
     'use strict';
@@ -25,10 +27,10 @@ module.exports.search = function (req, res) {
 
             query = query.or([{ 'firstName': { $regex: regex }}, { 'lastName': { $regex: regex }}]);
         }
-        
+
         if (req.body.searchCriteria.login) {
             regex = new RegExp(req.body.searchCriteria.login, 'i');
-            
+
             query = query.where('login', { $regex: regex });
         }
     }
@@ -48,7 +50,7 @@ module.exports.get = function (req, res) {
 
 module.exports.add = function (req, res) {
     'use strict';
-    
+
     // validations
     if (req.validations && req.validations.length > 0) {
         return messageHandler.wrapResponse(res, req.validations);
@@ -68,7 +70,7 @@ module.exports.add = function (req, res) {
 
 module.exports.update = function (req, res) {
     'use strict';
-    
+
     // validations
     if (req.validations && req.validations.length > 0) {
         return messageHandler.wrapResponse(res, req.validations);
@@ -104,25 +106,22 @@ module.exports.login = function (req, res) {
         }
 
         if (user) {
-            // change for update here
-//            Session.remove({ email: req.body.email }, function (err, sessions) {
-//                var session = new Session({ email: req.body.email, date: new Date() });
-//
-//                session.save(function (err, session) {
-//                    res.header('X-SessionID', session.id);
-//                    return res.send(dataMessage.wrap(err, user));
-//                });
-//            });
-            res.json(user);
+            SessionController.updateSession(user.id, function (err, session) {
+                res.header('X-SessionID', session.id);
+                res.header('X-UserID', user.id);
+
+                messageHandler.wrapResponse(res, err, user);
+            });
         } else {
-            res.status(401).send('Usuário ou senha inválidos!');
+            res.status(401);
+            messageHandler.wrapResponse(res, 'Usuário ou senha inválidos!');
         }
     });
 };
 
 module.exports.changePassword = function (req, res) {
     'use strict';
-    
+
     User.findByIdAndUpdate(req.params.id, { password: req.body.password }, function (err, result) {
         messageHandler.wrapResponse(res, err, result);
     });

@@ -1,6 +1,6 @@
 /*global module*/
 module.exports = {
     
-    url : 'mongodb://[use]:[password]@[host]'
+    url : 'mongodb://[user]:[password]@[host]'
     
 };
