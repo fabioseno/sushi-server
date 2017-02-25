@@ -1,6 +1,5 @@
 /*global require, process, console*/
 var express     = require('express'),
-    mongoose    = require('mongoose'),
     bodyParser  = require('body-parser'),
     app         = express(),
     port        = process.env.PORT || 8080;
@@ -12,24 +11,18 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 // error handling
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
+    'use strict';
+    
     console.error(err.stack);
     res.status(500).send('Unexpected error!');
 });
 
 // ## DATABASE ##
-var configDB = require('./config/db.config');
+require('./processes/database');
 
-mongoose.connect(configDB.url);
-var db = mongoose.connection;
-
-db.on('error', console.error);
-
-db.once('open', function () {
-    'use strict';
-
-    console.log('>> Database connected...');
-});
+// ## E-mail job ##
+require('./processes/email');
 
 // ## ROUTES ##
 require('./routes/')(app); // load our routes and pass in our app anpd fully configured passport

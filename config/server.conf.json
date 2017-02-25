@@ -4,5 +4,13 @@
     },
     "paging": {
         "pageSize": 10
+    },
+    "email": {
+        "sender": "Fábio Akira Yoshida <fabioseno@gmail.com>",
+        "transporterService": "Hotmail",
+        "transporterUser": "fabioseno@hotmail.com",
+        "transporterPassword": "Kfe.comL83",
+        "interval": 1,
+        "retries": 3
     }
 }

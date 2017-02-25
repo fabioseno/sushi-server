@@ -5,5 +5,6 @@ module.exports = function (app) {
     require('./common')(app);
     require('./log')(app);
     require('./user')(app);
+    require('./email')(app);
     
 };

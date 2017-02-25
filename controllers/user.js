@@ -3,126 +3,134 @@ var User              = require('../models/user'),
     SessionController = require('../controllers/session'),
     pagination        = require('../utils/pagination'),
     messageHandler    = require('../utils/messageHandler'),
-    config            = require('../config/server.conf.json');
+    config            = require('../config/server.conf.json'),
 
-module.exports.list = function (req, res) {
-    'use strict';
+    list = function (req, res) {
+        'use strict';
 
-    pagination.paginate(User.find(), null, null, function (err, result) {
-        messageHandler.wrapResponse(res, err, result);
-    });
-};
+        pagination.paginate(User.find(), null, null, function (err, result) {
+            messageHandler.wrapResponse(res, err, result);
+        });
+    },
 
-module.exports.search = function (req, res) {
-    'use strict';
+    search = function (req, res) {
+        'use strict';
 
-    var pagingOptions = req.body.pagingOptions,
-        sortOptions = req.body.sortOptions,
-        query = User.find(),
-        regex;
+        var pagingOptions = req.body.pagingOptions,
+            sortOptions = req.body.sortOptions,
+            query = User.find(),
+            regex;
 
-    if (req.body.searchCriteria) {
-        if (req.body.searchCriteria.name) {
-            regex = new RegExp(req.body.searchCriteria.name, 'i');
+        if (req.body.searchCriteria) {
+            if (req.body.searchCriteria.name) {
+                regex = new RegExp(req.body.searchCriteria.name, 'i');
 
-            query = query.or([{ 'firstName': { $regex: regex }}, { 'lastName': { $regex: regex }}]);
+                query = query.or([{ 'firstName': { $regex: regex }}, { 'lastName': { $regex: regex }}]);
+            }
+
+            if (req.body.searchCriteria.login) {
+                regex = new RegExp(req.body.searchCriteria.login, 'i');
+
+                query = query.where('login', { $regex: regex });
+            }
         }
 
-        if (req.body.searchCriteria.login) {
-            regex = new RegExp(req.body.searchCriteria.login, 'i');
+        pagination.paginate(query, pagingOptions, sortOptions, function (err, result) {
+            messageHandler.wrapResponse(res, err, result);
+        });
+    },
 
-            query = query.where('login', { $regex: regex });
+    get = function (req, res) {
+        'use strict';
+
+        User.findById(req.params.id, '-password', function (err, result) {
+            messageHandler.wrapResponse(res, err, result);
+        });
+    },
+
+    add = function (req, res) {
+        'use strict';
+
+        // validations
+        if (req.validations && req.validations.length > 0) {
+            return messageHandler.wrapResponse(res, req.validations);
         }
-    }
 
-    pagination.paginate(query, pagingOptions, sortOptions, function (err, result) {
-        messageHandler.wrapResponse(res, err, result);
-    });
-};
+        var model = new User(req.body);
 
-module.exports.get = function (req, res) {
-    'use strict';
+        model.creationDate = new Date();
 
-    User.findById(req.params.id, '-password', function (err, result) {
-        messageHandler.wrapResponse(res, err, result);
-    });
-};
+        model.save(function (err, result) {
+            messageHandler.wrapResponse(res, err, result);
+        });
+    },
 
-module.exports.add = function (req, res) {
-    'use strict';
+    update = function (req, res) {
+        'use strict';
 
-    // validations
-    if (req.validations && req.validations.length > 0) {
-        return messageHandler.wrapResponse(res, req.validations);
-    }
+        // validations
+        if (req.validations && req.validations.length > 0) {
+            return messageHandler.wrapResponse(res, req.validations);
+        }
 
-    var model = new User(req.body),
-        data;
+        var data = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            birthday: req.body.birthday,
+            status: req.body.status
+        };
 
-    req.body.creationDate = new Date();
+        User.findByIdAndUpdate(req.params.id, data, function (err, result) {
+            messageHandler.wrapResponse(res, err, result);
+        });
+    },
 
-    model = new User(req.body);
+    remove = function (req, res) {
+        'use strict';
 
-    model.save(function (err, result) {
-        messageHandler.wrapResponse(res, err, result);
-    });
-};
+        User.findByIdAndRemove(req.params.id, function (err, result) {
+            messageHandler.wrapResponse(res, err, result);
+        });
+    },
 
-module.exports.update = function (req, res) {
-    'use strict';
+    login = function (req, res) {
+        'use strict';
 
-    // validations
-    if (req.validations && req.validations.length > 0) {
-        return messageHandler.wrapResponse(res, req.validations);
-    }
+        User.findOneAndUpdate({ login: req.body.login, password: req.body.password, status: 'A' }, { lastLogin: new Date() }, function (err, user) {
+            if (err) {
+                return res.status(500).send(err);
+            }
 
-    var data = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email,
-        birthday: req.body.birthday,
-        status: req.body.status
+            if (user) {
+                SessionController.updateSession(user.id, function (err, session) {
+                    res.header('X-SessionID', session.id);
+                    res.header('X-UserID', user.id);
+
+                    messageHandler.wrapResponse(res, err, user);
+                });
+            } else {
+                res.status(401);
+                messageHandler.wrapResponse(res, 'Usuário ou senha inválidos!');
+            }
+        });
+    },
+
+    changePassword = function (req, res) {
+        'use strict';
+
+        User.findByIdAndUpdate(req.params.id, { password: req.body.password }, function (err, result) {
+            messageHandler.wrapResponse(res, err, result);
+        });
     };
 
-    User.findByIdAndUpdate(req.params.id, data, function (err, result) {
-        messageHandler.wrapResponse(res, err, result);
-    });
-};
-
-module.exports.remove = function (req, res) {
-    'use strict';
-
-    User.findByIdAndRemove(req.params.id, function (err, result) {
-        messageHandler.wrapResponse(res, err, result);
-    });
-};
-
-module.exports.login = function (req, res) {
-    'use strict';
-
-    User.findOneAndUpdate({ login: req.body.login, password: req.body.password, status: 'A' }, { lastLogin: new Date() }, function (err, user) {
-        if (err) {
-            return res.status(500).send(err);
-        }
-
-        if (user) {
-            SessionController.updateSession(user.id, function (err, session) {
-                res.header('X-SessionID', session.id);
-                res.header('X-UserID', user.id);
-
-                messageHandler.wrapResponse(res, err, user);
-            });
-        } else {
-            res.status(401);
-            messageHandler.wrapResponse(res, 'Usuário ou senha inválidos!');
-        }
-    });
-};
-
-module.exports.changePassword = function (req, res) {
-    'use strict';
-
-    User.findByIdAndUpdate(req.params.id, { password: req.body.password }, function (err, result) {
-        messageHandler.wrapResponse(res, err, result);
-    });
+module.exports = {
+    list: list,
+    search: search,
+    get: get,
+    add: add,
+    update: update,
+    remove: remove,
+    login: login,
+    changePassword: changePassword
 };

@@ -1,5 +1,5 @@
 /*global require, module*/
-module.exports.auth = function (req, res, next) {
+var auth = function (req, res, next) {
     'use strict';
 
     res.header('Access-Control-Allow-Origin', '*');
@@ -7,10 +7,15 @@ module.exports.auth = function (req, res, next) {
     res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
 
     next();
-};
+},
 
-module.exports.ping = function (req, res) {
-    'use strict';
+    ping = function (req, res) {
+        'use strict';
 
-    res.send('Server is up and running!');
+        res.send('Server is up and running!');
+    };
+
+module.exports = {
+    auth: auth,
+    ping: ping
 };

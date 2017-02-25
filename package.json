@@ -1,24 +1,25 @@
 {
-    "name": "sushi-server",
-    "version": "1.0.0",
-    "description": "Sushi base services as part of the Sushi framework.",
-    "main": "app.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/fabioseno/sushi-server"
-    },
-    "author": "Fabio Akira Yoshida",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/fabioseno/sushi-server/issues"
-    },
-    "homepage": "https://github.com/fabioseno/sushi-server",
-    "dependencies": {
-        "body-parser": "^1.14.2",
-        "express": "^4.13.3",
-        "mongoose": "^4.3.4"
-    }
+  "name": "sushi-server",
+  "version": "1.0.0",
+  "description": "Sushi base services as part of the Sushi framework.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fabioseno/sushi-server"
+  },
+  "author": "Fabio Akira Yoshida",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fabioseno/sushi-server/issues"
+  },
+  "homepage": "https://github.com/fabioseno/sushi-server",
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "express": "^4.13.3",
+    "mongoose": "^4.3.4",
+    "nodemailer": "^2.7.0"
+  }
 }
