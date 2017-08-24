@@ -1,3 +1,4 @@
 /node_modules
 
 /config/db.config.js
+/config/server.conf.json
